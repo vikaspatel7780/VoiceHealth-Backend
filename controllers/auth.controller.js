@@ -125,6 +125,39 @@ exports.verifyOtp = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+// 📧 Resend OTP
+exports.resendOtp = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found', success: false });
+    }
+
+    if (user.is_email_verified) {
+      return res.status(400).json({ message: 'Email is already verified', success: false });
+    }
+
+    // Generate new OTP and expiry
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    user.otp = otp;
+    user.otp_expiry = otpExpiry;
+    await user.save();
+
+    await sendOtpEmail(email, otp);
+
+    res.status(200).json({
+      message: 'New OTP has been sent to your email',
+      success: true
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
 
 // 🔐 Login
 exports.login = async (req, res) => {
