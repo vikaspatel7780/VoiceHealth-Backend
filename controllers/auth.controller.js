@@ -63,7 +63,7 @@ exports.register = async (req, res) => {
     await sendOtpEmail(email, otp);
 
     res.status(200).json({
-      message: "User registered. OTP sent to email.",
+      message: "Email not verified. Please verify OTP.",
       success: true,
       data: {
         _id: user._id,
@@ -250,7 +250,10 @@ exports.login = async (req, res) => {
       email: user.email,
       first_name: user.first_name,
       last_name: user.last_name,
+      contact_number: user.contact_number,
+      country_code: user.country_code,
       role: user.role,
+      is_email_verified: user.is_email_verified,
     };
 
     if (user.role === "doctor") {
